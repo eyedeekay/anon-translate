@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/eyedeekay/goSam"
 	tr "github.com/snakesel/libretranslate"
@@ -42,17 +43,23 @@ func main() {
 		Url: URL,
 	})
 	scanner := bufio.NewScanner(os.Stdin)
-	var input string
+	var lines []string
 	for scanner.Scan() {
-		input += scanner.Text()
+		lines = append(lines, scanner.Text())
 	}
 	if scanner.Err() != nil {
 		log.Fatal(scanner.Err())
 	}
-	trtext, err := translate.Translate(input, "auto", lang)
-	if err != nil {
-		log.Fatal(err)
-	}
 	os.Stdout = stdout
-	fmt.Println(trtext)
+	for _, line := range lines {
+		if line != "" && !strings.HasPrefix(line, "```") {
+			trtext, err := translate.Translate(line, "auto", lang)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%s\n", trtext)
+		} else {
+			fmt.Printf("%s\n", line)
+		}
+	}
 }
